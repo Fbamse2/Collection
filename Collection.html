@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Movie Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        #movie-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            justify-items: center;
+        }
+        .movie-card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #fff;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .search-bar {
+            margin-top: 20px;
+            text-align: center;
+        }
+        input[type="search"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Movie Collection</h1>
+        <div>
+            <label for="movie-title">Movie Title:</label>
+            <input type="text" id="movie-title">
+            <label for="movie-image">Movie Image:</label>
+            <input type="file" id="movie-image">
+            <button onclick="addMovie()">Add Movie</button>
+        </div>
+
+        <div class="search-bar">
+            <label for="search-movie">Search Movie:</label>
+            <input type="search" id="search-movie" onkeyup="filterMovies()">
+        </div>
+
+        <div id="movie-list">
+            <!-- Movies will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        // Function to add a movie to the list
+        function addMovie() {
+            const movieTitleInput = document.getElementById('movie-title');
+            const movieImageInput = document.getElementById('movie-image');
+            const movieTitle = movieTitleInput.value;
+            const movieImage = movieImageInput.files[0]; // Get the selected file
+
+            if (movieTitle.trim() !== '' && movieImage) {
+                // Get the current list of movies from local storage (if any)
+                const storedMovies = JSON.parse(localStorage.getItem('movies')) || [];
+
+                // Read the uploaded image as a data URL
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const movieDataUrl = event.target.result;
+
+                    // Add the new movie to the list
+                    storedMovies.push({ title: movieTitle, image: movieDataUrl });
+
+                    // Save the updated list to local storage
+                    localStorage.setItem('movies', JSON.stringify(storedMovies));
+
+                    // Clear the input fields
+                    movieTitleInput.value = '';
+                    movieImageInput.value = '';
+
+                    // Refresh the movie list
+                    displayMovies();
+                };
+
+                reader.readAsDataURL(movieImage); // Read the file as a data URL
+            }
+        }
+
+        // Function to remove a movie from the list
+        function removeMovie(index) {
+            const storedMovies = JSON.parse(localStorage.getItem('movies')) || [];
+
+            // Remove the movie at the specified index
+            storedMovies.splice(index, 1);
+
+            // Save the updated list to local storage
+            localStorage.setItem('movies', JSON.stringify(storedMovies));
+
+            // Refresh the movie list
+            displayMovies();
+        }
+
+        // Function to display the list of movies
+        function displayMovies() {
+            const movieList = document.getElementById('movie-list');
+            movieList.innerHTML = '';
+
+            // Get the list of movies from local storage
+            const storedMovies = JSON.parse(localStorage.getItem('movies')) || [];
+
+            // Populate the list with movies
+            storedMovies.forEach((movie, index) => {
+                const movieCard = document.createElement('div');
+                movieCard.classList.add('movie-card');
+
+                // Add an image if available
+                if (movie.image && movie.image.trim() !== '') {
+                    const img = document.createElement('img');
+                    img.src = movie.image;
+                    movieCard.appendChild(img);
+                }
+
+                // Add movie title and remove button
+                const title = document.createElement('p');
+                title.textContent = movie.title;
+                movieCard.appendChild(title);
+
+                const removeButton = document.createElement('button');
+                removeButton.textContent = 'Remove';
+                removeButton.onclick = () => removeMovie(index);
+                movieCard.appendChild(removeButton);
+
+                movieList.appendChild(movieCard);
+            });
+        }
+
+        // Function to filter movies based on the search input
+        function filterMovies() {
+            const searchTerm = document.getElementById('search-movie').value.toLowerCase();
+            const movieCards = document.querySelectorAll('.movie-card');
+
+            movieCards.forEach(movieCard => {
+                const title = movieCard.querySelector('p').textContent.toLowerCase();
+                if (title.includes(searchTerm)) {
+                    movieCard.style.display = 'block';
+                } else {
+                    movieCard.style.display = 'none';
+                }
+            });
+        }
+
+        // Initial display of movies
+        displayMovies();
+    </script>
+</body>
+</html>
