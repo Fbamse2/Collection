@@ -23,24 +23,35 @@
         h1 {
             color: #333;
         }
-        #movie-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+        .movie-list {
             margin-top: 20px;
-            justify-items: center;
+            text-align: left; /* Left-align the list items */
+            list-style-type: none; /* Remove list bullets */
+            padding: 0;
         }
-        .movie-card {
+        .movie-item {
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 10px;
             background-color: #fff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
         }
         img {
             max-width: 100%;
             height: auto;
+            max-height: 150px; /* Limit the image height */
+            margin-right: 10px; /* Add some space between image and text */
         }
-        input[type="text"], input[type="file"] {
+        .movie-info {
+            flex-grow: 1; /* Allow the text to grow within the available space */
+        }
+        .movie-title {
+            max-width: 790px; /* Set the maximum width */
+            word-wrap: break-word; /* Enable word wrapping */
+        }
+        input[type="text"] {
             width: 100%;
             padding: 8px;
             margin-bottom: 10px;
@@ -83,9 +94,9 @@
             <input type="search" id="search-movie" onkeyup="filterMovies()">
         </div>
 
-        <div id="movie-list">
+        <ul class="movie-list">
             <!-- Movies will be displayed here -->
-        </div>
+        </ul>
     </div>
 
     <script>
@@ -96,30 +107,45 @@
             const movieTitle = movieTitleInput.value;
             const movieImage = movieImageInput.files[0]; // Get the selected file
 
-            if (movieTitle.trim() !== '' && movieImage) {
+            if (movieTitle.trim() !== '') {
                 // Get the current list of movies from local storage (if any)
                 const storedMovies = JSON.parse(localStorage.getItem('movies')) || [];
 
-                // Read the uploaded image as a data URL
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const movieDataUrl = event.target.result;
+                // Read the uploaded image as a data URL if available
+                let movieDataUrl = '';
+                if (movieImage) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        movieDataUrl = event.target.result;
 
-                    // Add the new movie to the list
-                    storedMovies.push({ title: movieTitle, image: movieDataUrl });
+                        // Add the new movie to the list
+                        storedMovies.push({ title: movieTitle, image: movieDataUrl });
+
+                        // Save the updated list to local storage
+                        localStorage.setItem('movies', JSON.stringify(storedMovies));
+
+                        // Clear the input fields
+                        movieTitleInput.value = '';
+                        movieImageInput.value = '';
+
+                        // Refresh the movie list
+                        displayMovies();
+                    };
+
+                    reader.readAsDataURL(movieImage); // Read the file as a data URL
+                } else {
+                    // Add the new movie without an image
+                    storedMovies.push({ title: movieTitle });
 
                     // Save the updated list to local storage
                     localStorage.setItem('movies', JSON.stringify(storedMovies));
 
                     // Clear the input fields
                     movieTitleInput.value = '';
-                    movieImageInput.value = '';
 
                     // Refresh the movie list
                     displayMovies();
-                };
-
-                reader.readAsDataURL(movieImage); // Read the file as a data URL
+                }
             }
         }
 
@@ -139,7 +165,7 @@
 
         // Function to display the list of movies
         function displayMovies() {
-            const movieList = document.getElementById('movie-list');
+            const movieList = document.querySelector('.movie-list');
             movieList.innerHTML = '';
 
             // Get the list of movies from local storage
@@ -147,41 +173,47 @@
 
             // Populate the list with movies
             storedMovies.forEach((movie, index) => {
-                const movieCard = document.createElement('div');
-                movieCard.classList.add('movie-card');
+                const movieItem = document.createElement('li');
+                movieItem.classList.add('movie-item');
 
                 // Add an image if available
                 if (movie.image && movie.image.trim() !== '') {
                     const img = document.createElement('img');
                     img.src = movie.image;
-                    movieCard.appendChild(img);
+                    movieItem.appendChild(img);
                 }
+
+                // Create a movie info div to allow text to grow
+                const movieInfo = document.createElement('div');
+                movieInfo.classList.add('movie-info');
 
                 // Add movie title and remove button
                 const title = document.createElement('p');
+                title.classList.add('movie-title'); // Add the class for word wrapping
                 title.textContent = movie.title;
-                movieCard.appendChild(title);
+                movieInfo.appendChild(title);
 
                 const removeButton = document.createElement('button');
                 removeButton.textContent = 'Remove';
                 removeButton.onclick = () => removeMovie(index);
-                movieCard.appendChild(removeButton);
+                movieInfo.appendChild(removeButton);
 
-                movieList.appendChild(movieCard);
+                movieItem.appendChild(movieInfo);
+                movieList.appendChild(movieItem);
             });
         }
 
         // Function to filter movies based on the search input
         function filterMovies() {
             const searchTerm = document.getElementById('search-movie').value.toLowerCase();
-            const movieCards = document.querySelectorAll('.movie-card');
+            const movieItems = document.querySelectorAll('.movie-item');
 
-            movieCards.forEach(movieCard => {
-                const title = movieCard.querySelector('p').textContent.toLowerCase();
+            movieItems.forEach(movieItem => {
+                const title = movieItem.querySelector('.movie-title').textContent.toLowerCase();
                 if (title.includes(searchTerm)) {
-                    movieCard.style.display = 'block';
+                    movieItem.style.display = 'block';
                 } else {
-                    movieCard.style.display = 'none';
+                    movieItem.style.display = 'none';
                 }
             });
         }
