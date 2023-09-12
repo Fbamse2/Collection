@@ -3,223 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Movie Collection</title>
+    <title>Collection System</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
             background-color: #f4f4f4;
             margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
             padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         h1 {
+            text-align: center;
             color: #333;
         }
-        .movie-list {
-            margin-top: 20px;
-            text-align: left; /* Left-align the list items */
-            list-style-type: none; /* Remove list bullets */
-            padding: 0;
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
-        .movie-item {
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        button {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        .collection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .collection-item {
+            background-color: #fff;
+            padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            padding: 10px;
-            background-color: #fff;
-            margin-bottom: 10px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
         }
+
+        /* Apply word-wrap to the title and description text */
+        .collection-item h2,
+        .collection-item p {
+            word-wrap: break-word;
+        }
+
         img {
             max-width: 100%;
             height: auto;
-            max-height: 150px; /* Limit the image height */
-            margin-right: 10px; /* Add some space between image and text */
+            display: block;
+            margin-top: 10px;
         }
-        .movie-info {
-            flex-grow: 1; /* Allow the text to grow within the available space */
+
+        /* Style for the image inside the grid item */
+        .collection-item img {
+            max-height: 100px; /* Set a maximum height for the image */
+            width: auto;
+            display: block;
+            margin: 0 auto;
         }
-        .movie-title {
-            max-width: 790px; /* Set the maximum width */
-            word-wrap: break-word; /* Enable word wrapping */
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            background-color: #f44336;
-            color: white;
+
+        /* Style for the remove button */
+        .remove-button {
+            background-color: #ff0000;
+            color: #fff;
+            padding: 5px 10px;
             border: none;
-            padding: 8px 12px;
+            border-radius: 3px;
             cursor: pointer;
-            border-radius: 5px;
+            align-self: flex-end; /* Align button to the bottom */
+            margin-top: 10px; /* Add some margin between button and content */
         }
-        .search-bar {
-            margin-top: 20px;
-            text-align: center;
-        }
-        input[type="search"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+
+        /* Hover style for the remove button */
+        .remove-button:hover {
+            background-color: #cc0000;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>My Movie Collection</h1>
-        <div>
-            <label for="movie-title">Movie Title:</label>
-            <input type="text" id="movie-title">
-            <label for="movie-image">Movie Image:</label>
-            <input type="file" id="movie-image">
-            <button onclick="addMovie()">Add Movie</button>
-        </div>
+    <h1>My Collection</h1>
+    
+    <!-- Add a form to input new items -->
+    <form id="collection-form">
+        <label for="title">Title (max 70 characters):</label>
+        <input type="text" id="title" required>
 
-        <div class="search-bar">
-            <label for="search-movie">Search Movie:</label>
-            <input type="search" id="search-movie" onkeyup="filterMovies()">
-        </div>
+        <label for="image">Choose Image:</label>
+        <input type="file" id="image" accept="image/*" required>
 
-        <ul class="movie-list">
-            <!-- Movies will be displayed here -->
-        </ul>
-    </div>
+        <label for="description">Description (max 70 characters):</label>
+        <textarea id="description" rows="4" required></textarea>
+
+        <button type="submit">Add Item</button>
+    </form>
+
+    <!-- Display the collection as a grid -->
+    <div class="collection" id="collection"></div>
 
     <script>
-        // Function to add a movie to the list
-        function addMovie() {
-            const movieTitleInput = document.getElementById('movie-title');
-            const movieImageInput = document.getElementById('movie-image');
-            const movieTitle = movieTitleInput.value;
-            const movieImage = movieImageInput.files[0]; // Get the selected file
+        // JavaScript to handle form submission and display collection
+        const form = document.getElementById('collection-form');
+        const collection = document.getElementById('collection');
 
-            if (movieTitle.trim() !== '') {
-                // Get the current list of movies from local storage (if any)
-                const storedMovies = JSON.parse(localStorage.getItem('movies')) || [];
+        // Load items from local storage when the page loads
+        loadItemsFromLocalStorage();
 
-                // Read the uploaded image as a data URL if available
-                let movieDataUrl = '';
-                if (movieImage) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        movieDataUrl = event.target.result;
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
 
-                        // Add the new movie to the list
-                        storedMovies.push({ title: movieTitle, image: movieDataUrl });
+            // Get form values
+            const title = document.getElementById('title').value;
+            const imageInput = document.getElementById('image');
+            const description = document.getElementById('description').value;
 
-                        // Save the updated list to local storage
-                        localStorage.setItem('movies', JSON.stringify(storedMovies));
+            // Check if an image is selected
+            if (imageInput.files.length === 0) {
+                alert('Please select an image.');
+                return;
+            }
 
-                        // Clear the input fields
-                        movieTitleInput.value = '';
-                        movieImageInput.value = '';
+            // Limit title and description to 70 characters
+            const maxChars = 70;
+            const truncatedTitle = title.length > maxChars ? title.slice(0, maxChars) + '...' : title;
+            const truncatedDescription = description.length > maxChars ? description.slice(0, maxChars) + '...' : description;
 
-                        // Refresh the movie list
-                        displayMovies();
-                    };
+            const imageFile = imageInput.files[0];
 
-                    reader.readAsDataURL(movieImage); // Read the file as a data URL
-                } else {
-                    // Add the new movie without an image
-                    storedMovies.push({ title: movieTitle });
+            // Convert image to binary data
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const imageBinaryData = event.target.result;
 
-                    // Save the updated list to local storage
-                    localStorage.setItem('movies', JSON.stringify(storedMovies));
+                // Create a new item element
+                const newItem = document.createElement('div');
+                newItem.classList.add('collection-item');
+                newItem.innerHTML = `
+                    <h2>${truncatedTitle}</h2>
+                    <img src="${imageBinaryData}" alt="${truncatedTitle}">
+                    <p>${truncatedDescription}</p>
+                    <button class="remove-button" onclick="removeItem(this)">Remove</button>
+                `;
 
-                    // Clear the input fields
-                    movieTitleInput.value = '';
+                // Append the new item to the collection
+                collection.appendChild(newItem);
 
-                    // Refresh the movie list
-                    displayMovies();
-                }
+                // Save the item to local storage
+                saveItemToLocalStorage({
+                    title: truncatedTitle,
+                    imageBinaryData: imageBinaryData,
+                    description: truncatedDescription
+                });
+
+                // Clear form inputs
+                form.reset();
+            };
+            reader.readAsDataURL(imageFile);
+        });
+
+        // Function to save an item to local storage
+        function saveItemToLocalStorage(item) {
+            let items = JSON.parse(localStorage.getItem('collectionItems')) || [];
+            items.push(item);
+            localStorage.setItem('collectionItems', JSON.stringify(items));
+        }
+
+        // Function to load items from local storage and display them
+        function loadItemsFromLocalStorage() {
+            let items = JSON.parse(localStorage.getItem('collectionItems')) || [];
+            items.forEach(item => {
+                const newItem = document.createElement('div');
+                newItem.classList.add('collection-item');
+                newItem.innerHTML = `
+                    <h2>${item.title}</h2>
+                    <img src="${item.imageBinaryData}" alt="${item.title}">
+                    <p>${item.description}</p>
+                    <button class="remove-button" onclick="removeItem(this)">Remove</button>
+                `;
+                collection.appendChild(newItem);
+            });
+        }
+
+        // Function to remove an item from the collection
+        function removeItem(button) {
+            const item = button.parentElement;
+            const collectionItems = document.getElementsByClassName('collection-item');
+            const itemIndex = Array.from(collectionItems).indexOf(item);
+
+            if (itemIndex !== -1) {
+                // Remove item from the DOM
+                item.remove();
+
+                // Remove item from local storage
+                let items = JSON.parse(localStorage.getItem('collectionItems')) || [];
+                items.splice(itemIndex, 1);
+                localStorage.setItem('collectionItems', JSON.stringify(items));
             }
         }
-
-        // Function to remove a movie from the list
-        function removeMovie(index) {
-            const storedMovies = JSON.parse(localStorage.getItem('movies')) || [];
-
-            // Remove the movie at the specified index
-            storedMovies.splice(index, 1);
-
-            // Save the updated list to local storage
-            localStorage.setItem('movies', JSON.stringify(storedMovies));
-
-            // Refresh the movie list
-            displayMovies();
-        }
-
-        // Function to display the list of movies
-        function displayMovies() {
-            const movieList = document.querySelector('.movie-list');
-            movieList.innerHTML = '';
-
-            // Get the list of movies from local storage
-            const storedMovies = JSON.parse(localStorage.getItem('movies')) || [];
-
-            // Populate the list with movies
-            storedMovies.forEach((movie, index) => {
-                const movieItem = document.createElement('li');
-                movieItem.classList.add('movie-item');
-
-                // Add an image if available
-                if (movie.image && movie.image.trim() !== '') {
-                    const img = document.createElement('img');
-                    img.src = movie.image;
-                    movieItem.appendChild(img);
-                }
-
-                // Create a movie info div to allow text to grow
-                const movieInfo = document.createElement('div');
-                movieInfo.classList.add('movie-info');
-
-                // Add movie title and remove button
-                const title = document.createElement('p');
-                title.classList.add('movie-title'); // Add the class for word wrapping
-                title.textContent = movie.title;
-                movieInfo.appendChild(title);
-
-                const removeButton = document.createElement('button');
-                removeButton.textContent = 'Remove';
-                removeButton.onclick = () => removeMovie(index);
-                movieInfo.appendChild(removeButton);
-
-                movieItem.appendChild(movieInfo);
-                movieList.appendChild(movieItem);
-            });
-        }
-
-        // Function to filter movies based on the search input
-        function filterMovies() {
-            const searchTerm = document.getElementById('search-movie').value.toLowerCase();
-            const movieItems = document.querySelectorAll('.movie-item');
-
-            movieItems.forEach(movieItem => {
-                const title = movieItem.querySelector('.movie-title').textContent.toLowerCase();
-                if (title.includes(searchTerm)) {
-                    movieItem.style.display = 'block';
-                } else {
-                    movieItem.style.display = 'none';
-                }
-            });
-        }
-
-        // Initial display of movies
-        displayMovies();
     </script>
 </body>
 </html>
