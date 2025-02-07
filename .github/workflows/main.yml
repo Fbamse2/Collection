@@ -23,14 +23,13 @@ jobs:
           curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
           echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
           sudo apt update && sudo apt install ngrok
-          
+          ngrok authtoken YOUR_NGROK_AUTH_TOKEN  # Replace with your actual token
+
       - name: Start Flask App
         run: python main.py &
 
       - name: Start ngrok
-        run: ngrok http 5000 &
-
-      - name: Get Public URL
         run: |
+          ngrok http 5000 > /dev/null &
           sleep 5
           curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url'
