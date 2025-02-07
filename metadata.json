@@ -1,0 +1,14 @@
+{
+    "IMG_0069.jpg": {
+        "description": "Front cover of 'Introduction to Computer Vision'",
+        "author": "John Doe",
+        "publication_year": 2020,
+        "genre": "Educational"
+    },
+    "tlp_hero_book-cover-adb8a02f82394b605711f8632a44488b.jpg": {
+        "description": "Back cover of 'Introduction to Computer Vision'",
+        "author": "John Doe",
+        "publication_year": 2020,
+        "genre": "Educational"
+    }
+}

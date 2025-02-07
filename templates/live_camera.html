@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Camera Feature Matching</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            color: #fff;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            margin: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        video {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        .matches-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .match-info {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            text-align: center;
+        }
+        .match-info h2 {
+            color: #007BFF;
+            margin-bottom: 10px;
+        }
+        .match-info img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .match-info p {
+            margin: 5px 0;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .back-button {
+            display: block;
+            width: 200px;
+            margin: 40px auto 0 auto;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Live Camera Feature Matching</h1>
+        <video id="video" autoplay></video>
+        <div class="matches-container">
+            {% for match in matches_info %}
+            {% if match.description != 'N/A' and match.description != 'Not enough matches found' %}
+                <div class="match-info">
+                    <h2>{{ match.filename }}</h2>
+                    {% if match.image %}
+                        <img src="data:image/jpeg;base64,{{ match.image }}" alt="Matched Image">
+                    {% else %}
+                        <p>No matches found.</p>
+                    {% endif %}
+                    <p><strong>Description:</strong> {{ match.description }}</p>
+                    <p><strong>Author:</strong> {{ match.author }}</p>
+                    <p><strong>Publication Year:</strong> {{ match.publication_year }}</p>
+                    <p><strong>Genre:</strong> {{ match.genre }}</p>
+                </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <a href="/" class="back-button">Back to Start</a>
+        <footer>
+            &copy; 2023 Feature Match. All rights reserved.
+        </footer>
+    </div>
+    <script>
+        const video = document.getElementById('video');
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+                video.srcObject = stream;
+                video.play();
+            }).catch(function(error) {
+                console.error('Error accessing the camera: ', error);
+            });
+        }
+    </script>
+</body>
+</html>

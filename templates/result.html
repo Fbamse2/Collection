@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Matching Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .matches-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .match-info {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        .match-info h2 {
+            color: #007BFF;
+            margin-bottom: 10px;
+        }
+        .match-info img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .match-info p {
+            margin: 5px 0;
+        }
+        .back-button {
+            display: block;
+            width: 200px;
+            margin: 40px auto 0 auto;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        /* Lightbox styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            padding: 10px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .lightbox-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        .lightbox-content img {
+            max-width: calc(100% - 20px);
+            max-height: calc(100% - 20px);
+            padding: 10px;
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Feature Matching Results</h1>
+    <div class="matches-container">
+        {% for match in matches_info %}
+        {% if match.description != 'N/A' and match.description != 'Not enough matches found' %}
+            <div class="match-info">
+                <h2>{{ match.filename }}</h2>
+                {% if match.image %}
+                    <img src="data:image/jpeg;base64,{{ match.image }}" alt="Matched Image" onclick="openLightbox(this.src)">
+                {% else %}
+                    <p>No matches found.</p>
+                {% endif %}
+                <p><strong>Description:</strong> {{ match.description }}</p>
+                <p><strong>Author:</strong> {{ match.author }}</p>
+                <p><strong>Publication Year:</strong> {{ match.publication_year }}</p>
+                <p><strong>Genre:</strong> {{ match.genre }}</p>
+            </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <a href="/" class="back-button">Back to Start</a>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="close" onclick="closeLightbox()">&times;</span>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="">
+        </div>
+    </div>
+
+    <script>
+        function openLightbox(src) {
+            if (src) {
+                document.getElementById('lightbox').style.display = 'flex';
+                document.getElementById('lightbox-img').src = src;
+            }
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+            document.getElementById('lightbox-img').src = '';
+        }
+        closeLightbox();
+    </script>
+</body>
+</html>
