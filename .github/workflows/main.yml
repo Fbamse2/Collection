@@ -1,0 +1,24 @@
+name: Flask App CI/CD
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.6'
+
+      - name: Install dependencies
+        run: |
+          pip install flask opencv-python numpy pillow werkzeug
+
+      - name: Run Flask App
+        run: |
+          python main.py &
+          sleep 10
