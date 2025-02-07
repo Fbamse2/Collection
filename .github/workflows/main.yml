@@ -24,15 +24,13 @@ jobs:
           echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
           sudo apt update && sudo apt install ngrok
 
-      - name: Set up ngrok
-        run: ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+      - name: Configure ngrok
+        run: ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
 
       - name: Start Flask App
-        run: |
-          python main.py &  # Flask must listen on 0.0.0.0:5000
-          sleep 5
+        run: python main.py &
 
-      - name: Start ngrok and print URL
+      - name: Start ngrok
         run: |
           ngrok http 5000 > /dev/null &
           sleep 5
