@@ -18,20 +18,19 @@ jobs:
         run: |
           pip install flask opencv-python numpy pillow werkzeug
 
-      - name: Install ngrok
-        run: |
-          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
-          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
-          sudo apt update && sudo apt install ngrok
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
 
-      - name: Set up ngrok
-        run: ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+      - name: Install LocalTunnel
+        run: npm install -g localtunnel
 
       - name: Start Flask App
         run: python main.py &
 
-      - name: Start ngrok
+      - name: Expose Flask App with LocalTunnel
         run: |
-          ngrok http 5000 > /dev/null &
+          lt --port 5000 > lt_output.txt &
           sleep 5
-          curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url'
+          cat lt_output.txt
